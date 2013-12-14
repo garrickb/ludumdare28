@@ -15,13 +15,26 @@ var input = {
 var assets = {
     status: "...",
     data: [],
-    src: ["assets/img/mainmenu.png"],
+    src: ["assets/img/logo.png", "assets/img/mainmenu.png", "assets/img/boxer-standing.png", "assets/img/boxer-running0.png",
+        "assets/img/boxer-running1.png", "assets/img/boxer-running2.png", "assets/img/boxer-running3.png", "assets/img/boxer-jumping.png",
+        "assets/img/shadow.png", "assets/img/concrete.png", "assets/img/street.png", "assets/img/fence.png", "assets/img/bush.png"],
     assetsTotal: -1,
     assetsLoaded: 0
 };
 var mainMenu = {
-    titleY: -100,
-    titleDestY: 100
+    titleY: -150,
+    titleDestY: 15
+};
+var game = {
+    levelSpeed: 1,
+    levelX: 0,
+    timer: 3.0,
+    playerIsJumping: false,
+    playerTimeJumping: 0,
+    playerIsRunning: false,
+    playerRunningFrame: 0,
+    playerX: 50,
+    playerY: 365
 };
 
 cq(640, 480).framework({
@@ -46,10 +59,11 @@ cq(640, 480).framework({
 
     onstep: function (delta) {
         //Handle Input Events
-        if (input.mouseDown != input.prevMouseDown && input.mouseDown == false) { //On Click
+        //Click Events
+        if (input.mouseDown != input.prevMouseDown && input.mouseDown == false) {
             console.log("click event at " + input.mouseDownX + ", " + input.mouseDownY);
             switch (activeScreen) {
-                case 0:
+                case 0: //Main Menu
                     if (mainMenu.titleY >= mainMenu.titleDestY) {
                         if (input.mouseDownX < this.canvas.width / 2 + 100 && input.mouseDownX > this.canvas.width / 2 - 100) {
                             if (input.mouseDownY > 200 && input.mouseDownY < 260) {
@@ -60,20 +74,20 @@ cq(640, 480).framework({
                                 activeScreen = 2;
                             }
                         }
+                    } else {
+                        mainMenu.titleY = mainMenu.titleDestY;
                     }
                     break;
-                case 1: //Game Click Events
+                case 1: //Game
 
                     break;
-                case 2: //How To Play Events
+                case 2: //How To Play
                     if (input.mouseDownX < 605 && input.mouseDownX > 505) {
                         if (input.mouseDownY > 400 && input.mouseDownY < 440) {
-                        activeScreen = 0;
-                        console.log("back");
+                            activeScreen = 0;
+                            console.log("back");
                         }
                     }
-                    //roundRect(500,
-                    //  400, 100, 40, 20)
                     break;
             }
         }
@@ -86,14 +100,16 @@ cq(640, 480).framework({
                     assets.assetsTotal = assets.src.length;
                 if (assets.assetsTotal == assets.assetsLoaded) {
                     activeScreen = 0;
-                } else if (assets.data[assets.src[assets.assetsLoaded]] == undefined) { //While the next asset is not loaded
+                } else if (assets.src[assets.assetsLoaded] != undefined && assets.data[assets.src[assets.assetsLoaded]] == undefined) { //While the next asset is not loaded
                     var img = new Image();
                     assets.status = "Loading " + assets.src[assets.assetsLoaded] + "...";
                     img.src = assets.src[assets.assetsLoaded];
                     img.onload = function () {
-                        assets.data[assets.src[assets.assetsLoaded]] = img;
-                        console.log("'" + assets.src[assets.assetsLoaded] + "' loaded");
-                        assets.assetsLoaded++;
+                        if (assets.data[this.src] == undefined) {
+                            assets.data[this.src] = img;
+                            console.log("'" + this.src + "' loaded");
+                            assets.assetsLoaded++;
+                        }
                     };
                     if (assets.data[assets.src[assets.assetsLoaded]] == undefined) {
                         console.log("loading '" + assets.src[assets.assetsLoaded] + "'...");
@@ -102,20 +118,45 @@ cq(640, 480).framework({
                 }
                 break;
             case 0:
-
                 if (mainMenu.titleY < mainMenu.titleDestY) {
                     mainMenu.titleY += 0.075 * delta;
                 }
                 break;
             case 1:
-
+                //Update Player Sprite
+                if (game.timer >= 0) {
+                    game.timer -= delta / 1000;
+                } else {
+                    if (!game.playerIsRunning)
+                        game.playerIsRunning = true;
+                }
+                if (game.playerIsJumping) {
+                    game.playerTimeJumping += delta / 1000;
+                    if (game.playerY <= 365) {
+                        game.playerY += Math.cos(game.playerTimeJumping * 2.75) * -3.5;
+                    } else {
+                        game.playerRunningFrame = 3;
+                        game.playerIsJumping = false;
+                        game.playerTimeJumping = 0;
+                        game.playerY = 365;
+                    }
+                }
+                if (game.playerIsRunning) {
+                    game.levelX += (delta / 500) + game.levelSpeed / 100;
+                    if ((game.playerRunningFrame += (delta / 125) + game.levelSpeed / 100) >= 4) {
+                        game.playerRunningFrame = 0;
+                    }
+                }
                 //Game logic here
-
                 break;
         }
     },
 
     onrender: function () {
+        var ctx = this.canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.webkitImageSmoothingEnabled = false;
+        ctx.mozImageSmoothingEnabled = false;
         switch (activeScreen) {
             case -1:
                 this.clear('black');
@@ -126,11 +167,10 @@ cq(640, 480).framework({
                 break;
             case 0:
                 //Draw Title
-                var title = "You Only Get One"
                 this.clear('black');
-                this.drawImage(assets.data["assets/img/mainmenu.png"], 0, 0, 640, 480);
+                this.drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/mainmenu.png"], 0, 0, 640, 480);
                 this.fillStyle('white').font("40pt 'Droid Sans' serif").textBaseline("top")
-                    .fillText(title, (this.canvas.width / 2) - (this.measureText(title).width / 2), mainMenu.titleY);
+                    .drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/logo.png"], (this.canvas.width / 2) - 245, mainMenu.titleY);
                 if (mainMenu.titleY >= mainMenu.titleDestY) {
                     //Draw Buttons
                     //Start Button
@@ -144,12 +184,39 @@ cq(640, 480).framework({
                 }
                 break;
             case 1:
-                this.clear('black');
+                //Draw Background
+                this.clear('white');
+                this.fillStyle('00AA00').fillRect(0, 420, this.canvas.width, this.canvas.height - 420)
+                    .fillStyle('454545').fillRect(0, 285, this.canvas.width, 145)
+                    .fillStyle('00AA00').fillRect(0, 250, this.canvas.width, 35)
+                    .fillStyle('55FFFF').fillRect(0, 0, this.canvas.width, 250)
+                this.fillStyle('black').fillText("X: " + game.levelX, 0, 0);
+                for (var i = 0; i <= 10; i++)
+                    this.drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/concrete.png"], (game.levelX % 1 * -64) + i * 64, 375, 64, 64).
+                        drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/concrete.png"], (game.levelX % 1 * -64) + i * 64, 247, 64, 64).
+                        drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/bush.png"], (game.levelX % 1 * -64) + i * 64, 190, 64, 64).
+                        drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/fence.png"], (game.levelX % 1 * -64) + i * 64, 212, 64, 64).
+                        drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/street.png"], (game.levelX % 1 * -64) + i * 64, 311, 64, 64);
+
+                if (!game.playerIsRunning) {
+                    this.drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/boxer-standing.png"], game.playerX, game.playerY, 64, 64);
+                } else if (!game.playerIsJumping) {
+                    this.drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/boxer-running" + Math.floor(game.playerRunningFrame) + ".png"], game.playerX, game.playerY, 64, 64);
+                } else {
+                    this.drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/boxer-jumping.png"], game.playerX, game.playerY, 64, 64);
+                    this.drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/shadow.png"], game.playerX, 365, 64, 64);
+                }
                 //Draw game here
+
+                if (game.timer >= 0) {
+                    this.fillStyle('white').lineWidth(5).strokeStyle('black').beginPath().roundRect((this.canvas.width / 2) - 50,
+                            25, 100, 50, 20).closePath().stroke().fill().fillStyle('black').font("24pt 'Droid Sans' serif").
+                        fillText(Math.floor(game.timer + 1) + "", (this.canvas.width / 2 - (this.measureText("0").width / 2)), 32);
+                }
                 break;
             case 2:
                 this.clear('black');
-                this.drawImage(assets.data["assets/img/mainmenu.png"], 0, 0, 640, 480);
+                this.drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/mainmenu.png"], 0, 0, 640, 480);
                 this.fillStyle('white').font("35pt 'Droid Sans' serif").textBaseline("top")
                     .fillText("HOW TO PLAY", (this.canvas.width / 2) - (this.measureText("HOW TO PLAY").width / 2), 35);
                 //Back Button
@@ -161,7 +228,10 @@ cq(640, 480).framework({
     },
 
     onkeydown: function (key) {
-
+        if (key == "space" && activeScreen == 1 && game.playerIsRunning && !game.playerIsJumping) {
+            game.playerIsJumping = true;
+            console.log("jump");
+        }
     },
 
     onkeyup: function (key) {
