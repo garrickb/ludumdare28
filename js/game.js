@@ -17,7 +17,8 @@ var assets = {
     data: [],
     src: ["assets/img/logo.png", "assets/img/mainmenu.png", "assets/img/boxer-standing.png", "assets/img/boxer-running0.png",
         "assets/img/boxer-running1.png", "assets/img/boxer-running2.png", "assets/img/boxer-running3.png", "assets/img/boxer-jumping.png",
-        "assets/img/shadow.png", "assets/img/concrete.png", "assets/img/street.png", "assets/img/fence.png", "assets/img/bush.png"],
+        "assets/img/shadow.png", "assets/img/concrete.png", "assets/img/street.png", "assets/img/fence.png", "assets/img/bush.png",
+        "assets/img/house1.png", "assets/img/house0.png", "assets/img/house2.png"],
     assetsTotal: -1,
     assetsLoaded: 0
 };
@@ -26,6 +27,9 @@ var mainMenu = {
     titleDestY: 15
 };
 var game = {
+    houseX: 0,
+    bushX: 0,
+    houses: [1, 0, 1, 1],
     levelSpeed: 1,
     levelX: 0,
     timer: 3.0,
@@ -142,6 +146,8 @@ cq(640, 480).framework({
                     }
                 }
                 if (game.playerIsRunning) {
+                    game.bushX += ((delta / 500) + game.levelSpeed / 100) / 1.025;
+                    game.houseX += ((delta / 500) + game.levelSpeed / 100) / 1.1;
                     game.levelX += (delta / 500) + game.levelSpeed / 100;
                     if ((game.playerRunningFrame += (delta / 125) + game.levelSpeed / 100) >= 4) {
                         game.playerRunningFrame = 0;
@@ -191,10 +197,22 @@ cq(640, 480).framework({
                     .fillStyle('00AA00').fillRect(0, 250, this.canvas.width, 35)
                     .fillStyle('55FFFF').fillRect(0, 0, this.canvas.width, 250)
                 this.fillStyle('black').fillText("X: " + game.levelX, 0, 0);
+                //Randomize New Houses
+                if (game.houseX > 1 && game.houseX % 4 <= 1) {
+                    for (var h = 0; h < 3; h++)
+                        game.houses[h] = game.houses[h + 1];
+                    game.houses[3] = Math.round(Math.random() * 2);
+                    game.houseX = game.houseX % 4;
+                }
+                for (var h = 0; h <= 3; h++)
+                    this.drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/house" + game.houses[h] + ".png"], (game.houseX % 4 * -64) + h * 256, 0, 256, 256);
+
+                for (var b = 0; b <= 10; b++)
+                    this.drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/bush.png"], (game.bushX % 1 * -64) + b * 64, 195, 64, 64);
+
                 for (var i = 0; i <= 10; i++)
                     this.drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/concrete.png"], (game.levelX % 1 * -64) + i * 64, 375, 64, 64).
                         drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/concrete.png"], (game.levelX % 1 * -64) + i * 64, 247, 64, 64).
-                        drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/bush.png"], (game.levelX % 1 * -64) + i * 64, 190, 64, 64).
                         drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/fence.png"], (game.levelX % 1 * -64) + i * 64, 212, 64, 64).
                         drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/street.png"], (game.levelX % 1 * -64) + i * 64, 311, 64, 64);
 
