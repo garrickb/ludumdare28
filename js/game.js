@@ -7,7 +7,7 @@ window.onload = function (e) {
         game.sfxVolume = document.getElementById("sfx").value;
     };
     document.getElementById("music").onmouseup = function (e) {
-        assets.data["http://http://garrickb.github.io/ludumdare28/assets/music.mp3"].volume = document.getElementById("music").value;
+        assets.data["http://garrickb.github.io/ludumdare28/assets/music.mp3"].volume = document.getElementById("music").value;
         game.musicVolume = document.getElementById("music").value;
     };
 };
@@ -182,8 +182,8 @@ function intersectRect(r1, r2) {
 }
 
 function die() {
-    assets.data["http://http://garrickb.github.io/ludumdare28/assets/yelp.mp3"].volume = game.sfxVolume;
-    assets.data["http://http://garrickb.github.io/ludumdare28/assets/yelp.mp3"].play();
+    assets.data["http://garrickb.github.io/ludumdare28/assets/yelp.mp3"].volume = game.sfxVolume;
+    assets.data["http://garrickb.github.io/ludumdare28/assets/yelp.mp3"].play();
     activeScreen = 3;
     game.playerIsJumping = false;
     game.playerIsMoving = false;
@@ -329,7 +329,7 @@ cq(640, 480).framework({
                             assets.data[snd.src] = snd;
                             assets.assetsLoaded++;
                             snd.volume = game.sfxVolume;
-                            if (snd.src == "http://http://garrickb.github.io/ludumdare28/assets/music.mp3") {
+                            if (snd.src == "http://garrickb.github.io/ludumdare28/assets/music.mp3") {
                                 snd.autoplay = true;
                                 snd.loop = true;
                                 snd.volume = game.musicVolume;
@@ -399,8 +399,8 @@ cq(640, 480).framework({
                         game.totalYards += game.levelX * 2;
                         goToLevel(++game.level);
                     } else if (!game.completionTreatAwarded && game.levelX >= game.data[0].length + 10) {
-                        assets.data["http://http://garrickb.github.io/ludumdare28/assets/woof.mp3"].volume = game.sfxVolume;
-                        assets.data["http://http://garrickb.github.io/ludumdare28/assets/woof.mp3"].play();
+                        assets.data["http://garrickb.github.io/ludumdare28/assets/woof.mp3"].volume = game.sfxVolume;
+                        assets.data["http://garrickb.github.io/ludumdare28/assets/woof.mp3"].play();
                         game.treats++;
                         game.completionTreatAwarded = true;
                     }
@@ -450,7 +450,7 @@ cq(640, 480).framework({
                 .fillStyle('#454545').fillRect(0, 285, this.canvas.width, 145)
                 .fillStyle('#55FFFF').fillRect(0, 0, this.canvas.width, 270);
             for (var c = 0; c < 2; c++)
-                this.drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/clouds.png"], (game.cloudX % 1 * -640) + c * 640, 0, 640, 256);
+                this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/clouds.png"], (game.cloudX % 1 * -640) + c * 640, 0, 640, 256);
             //Randomize New Houses
             if (game.houseX > 1 && game.houseX % 4 <= 1) {
                 for (var h = 0; h < 3; h++)
@@ -462,17 +462,17 @@ cq(640, 480).framework({
                 game.houseX = game.houseX % 4;
             }
             for (var h = 0; h <= 3; h++)
-                this.drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/house" + game.houses[h] + ".png"], (game.houseX % 4 * -64) + h * 256, 15, 256, 256);
+                this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/house" + game.houses[h] + ".png"], (game.houseX % 4 * -64) + h * 256, 15, 256, 256);
 
             this.fillStyle('00AA00').fillRect(0, 250, this.canvas.width, 35);
             for (var b = 0; b <= 10; b++)
-                this.drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/bush.png"], (game.bushX % 1 * -64) + b * 64, 195, 64, 64);
+                this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/bush.png"], (game.bushX % 1 * -64) + b * 64, 195, 64, 64);
 
             for (var i = 0; i <= 10; i++)
-                this.drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/concrete.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 375, 64, 64).
-                    drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/concrete.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 247, 64, 64).
-                    drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/fence.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 212, 64, 64).
-                    drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/street.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 311, 64, 64);
+                this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/concrete.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 375, 64, 64).
+                    drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/concrete.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 247, 64, 64).
+                    drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/fence.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 212, 64, 64).
+                    drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/street.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 311, 64, 64);
             if (activeScreen == 1 || activeScreen == 3) {
                 //Draw Obstacles
                 for (var row = 3; row >= 0; row--) {
@@ -488,14 +488,14 @@ cq(640, 480).framework({
                     for (var col = 0; col < game.data[0].length && game.data[row] != undefined; col++) {
                         if (game.data[row][col] != undefined) {
                             if (row == 0 || row == 3) {
-                                this.drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/sidewalk" + game.data[row][col] + ".png"], (game.levelX * -64) + (col * 64), drawY, 64, 64);
+                                this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/sidewalk" + game.data[row][col] + ".png"], (game.levelX * -64) + (col * 64), drawY, 64, 64);
                             } else {
-                                this.drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/street" + game.data[row][col] + ".png"], (game.levelX * -64) + (col * 64), drawY, 64, 64);
+                                this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/street" + game.data[row][col] + ".png"], (game.levelX * -64) + (col * 64), drawY, 64, 64);
                             }
                         }
                     }
                     if (game.levelX >= game.data[0].length - 10) {
-                        this.drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/store.png"], (game.levelX * -64) + ((game.data[0].length + 5) * 64), 0, 640, 480);
+                        this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/store.png"], (game.levelX * -64) + ((game.data[0].length + 5) * 64), 0, 640, 480);
                         if (game.levelX >= game.data[0].length) {
                             game.levelSpeed = -0.5;
                         }
@@ -504,14 +504,14 @@ cq(640, 480).framework({
                     if (row == game.playerCurrentLane) {
                         if (!game.playerIsRunning) {
                             if (activeScreen == 3)
-                                this.drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/boxer-jumping.png"], game.playerX, game.playerY, 64, 64);
+                                this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/boxer-jumping.png"], game.playerX, game.playerY, 64, 64);
                             else
-                                this.drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/boxer-standing.png"], game.playerX, game.playerY, 64, 64);
+                                this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/boxer-standing.png"], game.playerX, game.playerY, 64, 64);
                         } else if (!game.playerIsJumping) {
-                            this.drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/boxer-running" + Math.floor(game.playerRunningFrame) + ".png"], game.playerX, game.playerY, 64, 64);
+                            this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/boxer-running" + Math.floor(game.playerRunningFrame) + ".png"], game.playerX, game.playerY, 64, 64);
                         } else {
-                            this.drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/boxer-jumping.png"], game.playerX, game.playerY, 64, 64);
-                            this.drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/shadow.png"], game.playerX, game.playerJumpStartY, 64, 64);
+                            this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/boxer-jumping.png"], game.playerX, game.playerY, 64, 64);
+                            this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/shadow.png"], game.playerX, game.playerJumpStartY, 64, 64);
                         }
                     }
                     if (game.playerIsRunning) {
@@ -614,9 +614,9 @@ cq(640, 480).framework({
             }
             if (activeScreen == 0) {
                 //Draw Title
-                //this.drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/mainmenu.png"], 0, 0, 640, 480);
+                //this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/mainmenu.png"], 0, 0, 640, 480);
                 this.fillStyle('white').font("40pt 'Droid Sans' serif").textBaseline("top")
-                    .drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/logo.png"], (this.canvas.width / 2) - 245, mainMenu.titleY);
+                    .drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/logo.png"], (this.canvas.width / 2) - 245, mainMenu.titleY);
                 if (mainMenu.titleY >= mainMenu.titleDestY) {
                     //Draw Buttons
                     //Start Button
@@ -629,7 +629,7 @@ cq(640, 480).framework({
                         fillText("HOW TO PLAY", (this.canvas.width / 2 - (this.measureText("HOW TO PLAY").width / 2)), 308);
                 }
             } else if (activeScreen == 2) {
-                //this.drawImage(assets.data["http://http://garrickb.github.io/ludumdare28/assets/img/mainmenu.png"], 0, 0, 640, 480);
+                //this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/mainmenu.png"], 0, 0, 640, 480);
                 this.fillStyle('white').font("35pt 'Droid Sans' serif").textBaseline("top")
                     .fillText("HOW TO PLAY", (this.canvas.width / 2) - (this.measureText("HOW TO PLAY").width / 2), 35);
                 //Back Button
@@ -650,8 +650,8 @@ cq(640, 480).framework({
                 game.playerIsJumping = true;
                 game.playerJumpStartY = game.playerY;
                 input.spaceDown = true;
-                assets.data["http://http://garrickb.github.io/ludumdare28/assets/jump.wav"].volume = game.sfxVolume;
-                assets.data["http://http://garrickb.github.io/ludumdare28/assets/jump.wav"].play();
+                assets.data["http://garrickb.github.io/ludumdare28/assets/jump.wav"].volume = game.sfxVolume;
+                assets.data["http://garrickb.github.io/ludumdare28/assets/jump.wav"].play();
             } else if ((key == "up" || key == "w") && game.playerCurrentLane < 3) {
                 game.playerLastLane = game.playerCurrentLane++;
                 if (game.playerCurrentLane == 0)
