@@ -2,12 +2,13 @@
  * Created by Garrick on 12/13/13.
  */
 //Volume Controls
+var url = document.URL;
 window.onload = function (e) {
     document.getElementById("sfx").onmouseup = function (e) {
         game.sfxVolume = document.getElementById("sfx").value;
     };
     document.getElementById("music").onmouseup = function (e) {
-        assets.data["http://garrickb.github.io/ludumdare28/assets/music.mp3"].volume = document.getElementById("music").value;
+        assets.data[url + "assets/music.mp3"].volume = document.getElementById("music").value;
         game.musicVolume = document.getElementById("music").value;
     };
 };
@@ -45,13 +46,14 @@ var assets = {
     ],
     status: "...",
     data: [],
-    src: ["assets/img/logo.png", "assets/img/mainmenu.png", "assets/img/boxer-standing.png", "assets/img/boxer-running0.png",
+    src: ["assets/img/logo.png", "assets/img/mainmenu.png", "assets/img/ui.png", "assets/img/boxer-standing.png", "assets/img/boxer-running0.png",
         "assets/img/boxer-running1.png", "assets/img/boxer-running2.png", "assets/img/boxer-running3.png", "assets/img/boxer-jumping.png",
         "assets/img/shadow.png", "assets/img/concrete.png", "assets/img/street.png", "assets/img/fence.png", "assets/img/bush.png",
         "assets/img/house1.png", "assets/img/house0.png", "assets/img/house2.png", "assets/img/house3.png", "assets/img/house4.png",
         "assets/img/house5.png", "assets/img/house6.png", "assets/img/sidewalk0.png", "assets/img/sidewalk1.png",
         "assets/img/street0.png", "assets/img/street1.png", "assets/img/street2.png", "assets/img/clouds.png", "assets/music.mp3",
-        "assets/jump.wav", "assets/yelp.mp3", "assets/img/store.png", "assets/woof.mp3"],
+        "assets/jump.wav", "assets/yelp.mp3", "assets/img/store-background.png", "assets/img/store-foreground.png",
+        "assets/img/treat.png", "assets/woof.mp3"],
     assetsTotal: -1,
     assetsLoaded: 0
 };
@@ -60,6 +62,9 @@ var mainMenu = {
     titleDestY: 15
 };
 var game = {
+    treatYValue: 0,
+    treatY: 0,
+    atEnd: false,
     paused: false,
     completionTreatAwarded: false,
     treats: 1,
@@ -182,8 +187,8 @@ function intersectRect(r1, r2) {
 }
 
 function die() {
-    assets.data["http://garrickb.github.io/ludumdare28/assets/yelp.mp3"].volume = game.sfxVolume;
-    assets.data["http://garrickb.github.io/ludumdare28/assets/yelp.mp3"].play();
+    assets.data[url + "assets/yelp.mp3"].volume = game.sfxVolume;
+    assets.data[url + "assets/yelp.mp3"].play();
     activeScreen = 3;
     game.playerIsJumping = false;
     game.playerIsMoving = false;
@@ -191,6 +196,7 @@ function die() {
 }
 
 function reset() {
+    game.atEnd = false;
     game.treats = 1;
     game.totalYards = 0;
     game.completionTreatAwarded = false;
@@ -214,14 +220,28 @@ function reset() {
 }
 
 function goToLevel(level) {
+    game.atEnd = false;
     game.completionTreatAwarded = false;
     game.dead = false;
     game.level = level;
     game.levelSpeed = level;
     game.data = loadLevel();
     game.levelX = -10 * level;
-    game.playerDestY = 0;
-    game.playerIsMoving = false;
+    if (game.playerCurrentLane != game.playerLastLane) {
+        game.playerIsMoving = true;
+        if (game.playerLastLane == 0)
+            game.playerDestY = 365;
+        else if (game.playerLastLane == 1)
+            game.playerDestY = 333;
+        else if (game.playerLastLane == 2)
+            game.playerDestY = 269;
+        else
+            game.playerDestY = 237;
+        game.playerCurrentLane = game.playerLastLane;
+    } else {
+        game.playerIsMoving = false;
+        game.playerDestY = 0;
+    }
     game.playerIsJumping = false;
     game.playerJumpStartY = 0;
     game.playerTimeJumping = 0;
@@ -263,7 +283,8 @@ cq(640, 480).framework({
         //Handle Input Events
         //Click Events
         if (input.mouseDown != input.prevMouseDown && input.mouseDown == false) {
-            console.log("click event at " + input.mouseDownX + ", " + input.mouseDownY);
+            if (game.debug)
+                console.log("click event at " + input.mouseDownX + ", " + input.mouseDownY);
             switch (activeScreen) {
                 case 0: //Main Menu
                     if (mainMenu.titleY >= mainMenu.titleDestY) {
@@ -314,6 +335,8 @@ cq(640, 480).framework({
                         case "png":
                             var img = new Image();
                             assets.status = "Loading " + assets.src[assets.assetsLoaded] + "...";
+                            if (game.debug)
+                                console.log("loading " + assets.src[assets.assetsLoaded]);
                             img.src = assets.src[assets.assetsLoaded];
                             img.onload = function () {
                                 if (assets.data[this.src] == undefined) {
@@ -325,11 +348,13 @@ cq(640, 480).framework({
                         case "mp3":
                         case "wav":
                             var snd = new Audio(assets.src[assets.assetsLoaded]);
+                            if (game.debug)
+                                console.log("loading " + assets.src[assets.assetsLoaded]);
                             assets.status = "Loading " + snd.src + "...";
                             assets.data[snd.src] = snd;
                             assets.assetsLoaded++;
                             snd.volume = game.sfxVolume;
-                            if (snd.src == "http://garrickb.github.io/ludumdare28/assets/music.mp3") {
+                            if (snd.src == url + "assets/music.mp3") {
                                 snd.autoplay = true;
                                 snd.loop = true;
                                 snd.volume = game.musicVolume;
@@ -357,8 +382,9 @@ cq(640, 480).framework({
                 if (game.playerIsJumping) {
                     game.playerTimeJumping += delta / 1000;
                     if (game.playerY <= game.playerJumpStartY) {
-                        if (!input.spaceDown && game.playerTimeJumping < 0.6)
+                        if (!input.spaceDown && game.playerTimeJumping < 0.6 && game.playerTimeJumping > 0.3) {
                             game.playerTimeJumping = 0.6;
+                        }
                         game.playerY += Math.cos(game.playerTimeJumping * 2.75) * -3.5;
                     } else {
                         game.playerRunningFrame = 3;
@@ -395,14 +421,20 @@ cq(640, 480).framework({
                     }
                     if (game.levelX >= game.data[0].length + 20) { //20 extra for the transition
                         //TODO: Finished with level.
-                        console.log("Finished Level: " + game.level);
+                        if (game.debug)
+                            console.log("Finished Level: " + game.level);
                         game.totalYards += game.levelX * 2;
                         goToLevel(++game.level);
-                    } else if (!game.completionTreatAwarded && game.levelX >= game.data[0].length + 10) {
-                        assets.data["http://garrickb.github.io/ludumdare28/assets/woof.mp3"].volume = game.sfxVolume;
-                        assets.data["http://garrickb.github.io/ludumdare28/assets/woof.mp3"].play();
-                        game.treats++;
-                        game.completionTreatAwarded = true;
+                    } else if (game.levelX >= game.data[0].length + 10) {
+                        if (!game.completionTreatAwarded) {
+                            assets.data[url + "assets/woof.mp3"].volume = game.sfxVolume;
+                            assets.data[url + "assets/woof.mp3"].play();
+                            game.treats++;
+                            game.completionTreatAwarded = true;
+                        }
+                    } else if (game.levelX >= game.data[0].length) {
+                        game.treatYValue += delta;
+                        game.treatY += Math.cos(game.treatYValue / 500) / 2;
                     }
                 }
                 break;
@@ -428,8 +460,9 @@ cq(640, 480).framework({
     },
 
     onrender: function () {
+        this.clear('black');
         if (game.paused) {
-            this.clear('black').fillStyle('white').font("50pt 'Droid Sans' serif").textBaseline("top")
+            this.fillStyle('white').font("50pt 'Droid Sans' serif").textBaseline("top")
                 .fillText("PAUSED", (this.canvas.width / 2) - (this.measureText("PAUSED").width / 2), 190).font("20pt 'Droid Sans' serif")
                 .fillStyle('red').fillText("click to un-pause.", (this.canvas.width / 2) - (this.measureText("click to un-pause").width / 2), 260);
             return;
@@ -439,18 +472,17 @@ cq(640, 480).framework({
         ctx.webkitImageSmoothingEnabled = false;
         ctx.mozImageSmoothingEnabled = false;
         if (activeScreen == -1) {
-            this.clear('black');
             this.fillStyle('white').font("25pt 'Droid Sans' serif").textBaseline("top")
                 .fillText("Loading Assets", (this.canvas.width / 2) - (this.measureText("Loading Assets").width / 2),
                     180).font("8pt 'Droid Sans' serif").fillText(assets.status, (this.canvas.width / 2) - (this.measureText(assets.status).width / 2),
                     230);
         } else {
             //Draw Background
-            this.clear('white').fillStyle('#00AA00').fillRect(0, 420, this.canvas.width, this.canvas.height - 420)
-                .fillStyle('#454545').fillRect(0, 285, this.canvas.width, 145)
-                .fillStyle('#55FFFF').fillRect(0, 0, this.canvas.width, 270);
+            this.fillStyle('#00AA00').fillRect(0, 420, this.canvas.width, 300)
+                .fillStyle('#55FFFF').fillRect(0, 0, this.canvas.width, 255)
+                .fillStyle('#454545').fillRect(0, 255, this.canvas.width, 160);
             for (var c = 0; c < 2; c++)
-                this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/clouds.png"], (game.cloudX % 1 * -640) + c * 640, 0, 640, 256);
+                this.drawImage(assets.data[url + "assets/img/clouds.png"], (game.cloudX % 1 * -640) + c * 640, 0, 640, 256);
             //Randomize New Houses
             if (game.houseX > 1 && game.houseX % 4 <= 1) {
                 for (var h = 0; h < 3; h++)
@@ -462,17 +494,28 @@ cq(640, 480).framework({
                 game.houseX = game.houseX % 4;
             }
             for (var h = 0; h <= 3; h++)
-                this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/house" + game.houses[h] + ".png"], (game.houseX % 4 * -64) + h * 256, 15, 256, 256);
+                this.drawImage(assets.data[url + "assets/img/house" + game.houses[h] + ".png"], (game.houseX % 4 * -64) + h * 256, 15, 256, 256);
 
             this.fillStyle('00AA00').fillRect(0, 250, this.canvas.width, 35);
             for (var b = 0; b <= 10; b++)
-                this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/bush.png"], (game.bushX % 1 * -64) + b * 64, 195, 64, 64);
+                this.drawImage(assets.data[url + "assets/img/bush.png"], (game.bushX % 1 * -64) + b * 64, 195, 64, 64);
 
             for (var i = 0; i <= 10; i++)
-                this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/concrete.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 375, 64, 64).
-                    drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/concrete.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 247, 64, 64).
-                    drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/fence.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 212, 64, 64).
-                    drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/street.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 311, 64, 64);
+                this.drawImage(assets.data[url + "assets/img/concrete.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 375, 64, 64).
+                    drawImage(assets.data[url + "assets/img/concrete.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 247, 64, 64).
+                    drawImage(assets.data[url + "assets/img/fence.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 212, 64, 64).
+                    drawImage(assets.data[url + "assets/img/street.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 311, 64, 64);
+            if (game.data != undefined && game.levelX >= game.data[0].length - 10) {
+                this.drawImage(assets.data[url + "assets/img/store-background.png"], (game.levelX * -64) + ((game.data[0].length) * 64) + 2, -1, 1280, 480)
+                if (game.levelX >= game.data[0].length && !game.atEnd) {
+                    game.levelSpeed = -0.5;
+                    game.playerLastLane = game.playerCurrentLane;
+                    game.playerCurrentLane = 1;
+                    game.playerDestY = 333;
+                    game.playerIsMoving = true;
+                    game.atEnd = true;
+                }
+            }
             if (activeScreen == 1 || activeScreen == 3) {
                 //Draw Obstacles
                 for (var row = 3; row >= 0; row--) {
@@ -488,32 +531,29 @@ cq(640, 480).framework({
                     for (var col = 0; col < game.data[0].length && game.data[row] != undefined; col++) {
                         if (game.data[row][col] != undefined) {
                             if (row == 0 || row == 3) {
-                                this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/sidewalk" + game.data[row][col] + ".png"], (game.levelX * -64) + (col * 64), drawY, 64, 64);
+                                this.drawImage(assets.data[url + "assets/img/sidewalk" + game.data[row][col] + ".png"], (game.levelX * -64) + (col * 64), drawY, 64, 64);
                             } else {
-                                this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/street" + game.data[row][col] + ".png"], (game.levelX * -64) + (col * 64), drawY, 64, 64);
+                                this.drawImage(assets.data[url + "assets/img/street" + game.data[row][col] + ".png"], (game.levelX * -64) + (col * 64), drawY, 64, 64);
                             }
-                        }
-                    }
-                    if (game.levelX >= game.data[0].length - 10) {
-                        this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/store.png"], (game.levelX * -64) + ((game.data[0].length + 5) * 64), 0, 640, 480);
-                        if (game.levelX >= game.data[0].length) {
-                            game.levelSpeed = -0.5;
                         }
                     }
                     //Draw dog in appropriate row
                     if (row == game.playerCurrentLane) {
                         if (!game.playerIsRunning) {
                             if (activeScreen == 3)
-                                this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/boxer-jumping.png"], game.playerX, game.playerY, 64, 64);
+                                this.drawImage(assets.data[url + "assets/img/boxer-jumping.png"], game.playerX, game.playerY, 64, 64);
                             else
-                                this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/boxer-standing.png"], game.playerX, game.playerY, 64, 64);
+                                this.drawImage(assets.data[url + "assets/img/boxer-standing.png"], game.playerX, game.playerY, 64, 64);
                         } else if (!game.playerIsJumping) {
-                            this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/boxer-running" + Math.floor(game.playerRunningFrame) + ".png"], game.playerX, game.playerY, 64, 64);
+                            this.drawImage(assets.data[url + "assets/img/boxer-running" + Math.floor(game.playerRunningFrame) + ".png"], game.playerX, game.playerY, 64, 64);
                         } else {
-                            this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/boxer-jumping.png"], game.playerX, game.playerY, 64, 64);
-                            this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/shadow.png"], game.playerX, game.playerJumpStartY, 64, 64);
+                            this.drawImage(assets.data[url + "assets/img/boxer-jumping.png"], game.playerX, game.playerY, 64, 64);
+                            this.drawImage(assets.data[url + "assets/img/shadow.png"], game.playerX, game.playerJumpStartY, 64, 64);
                         }
                     }
+                    if (!game.completionTreatAwarded)
+                        this.drawImage(assets.data[url + "assets/img/treat.png"], (game.levelX * -64) + ((game.data[0].length) * 64) + 640 + 54, 340 + game.treatY, 72, 42);
+                    this.drawImage(assets.data[url + "assets/img/store-foreground.png"], (game.levelX * -64) + ((game.data[0].length) * 64) + 2, -1, 1280, 480);
                     if (game.playerIsRunning) {
                         var player = {
                             left: game.playerX + 10,
@@ -581,14 +621,15 @@ cq(640, 480).framework({
                     }
                 }
             }
-            //Draw game here
             if (activeScreen == 1) {
+                this.drawImage(assets.data[url + "assets/img/ui.png"], 0, 0, 212, 74).fillStyle('white').font("17pt 'Droid Sans' serif").fillText((Math.floor(game.totalYards +
+                    ((game.levelX > 0) ? game.levelX * 2 : 0))) + " yds.", 10, 10).fillText(game.treats + "", 90, 38);
                 if (game.timer >= 0) {
                     if (game.timer > 3) {
                         this.fillStyle('rgba(0,0,0, 0.85').fillRect(0, 0, this.canvas.width, this.canvas.height).font("20pt 'Droid Sans' serif").fillStyle('white')
-                            .wrappedText("Your owner wanted to reward you with a massive pile of dog treats after you went on a walk with him," +
+                            .wrappedText("     Your owner wanted to reward you with a massive pile of dog treats after you went on a walk with him," +
                                 " but when he emptied the box out into your bowl, only one came out! You refuse to to only eat one treat, so it's time to get the treats you deserve!" +
-                                " Run to as many pet stores as you can and take the free treats! But remember, only one treat per dog!", 100, 100, 480)
+                                " Run to as many pet stores as you can and take the free treats! But remember, only one treat per dog!", 85, 100, 480)
                             .font("12pt 'Droid Sans' serif").fillStyle('red').fillText("Press space to skip.", this.canvas.width / 2 - this.measureText("Press space to skip.").width / 2, 450);
                     }
                     this.fillStyle('white').lineWidth(5).strokeStyle('black').beginPath().roundRect((this.canvas.width / 2) - 50,
@@ -606,17 +647,17 @@ cq(640, 480).framework({
                         font("35pt 'Droid Sans' serif").fillStyle('white').wrappedText(game.deathMessage + "", 100, 50, 450).
                         font("25pt 'Droid Sans' serif").fillText("You made it " + (Math.floor(game.totalYards + ((game.levelX > 0) ? game.levelX * 2 : 0))) +
                             " yards.", this.canvas.width / 2 - this.measureText("You made it " + (Math.floor(game.totalYards +
-                            ((game.levelX > 0) ? game.levelX * 2 : 0))) + " yards.").width / 2, 200).fillText("...and aquired " + ((game.treats >= 1) ? game.treats : "no") +
-                            " treat" + ((game.treats == 1) ? "" : "s") + ".", this.canvas.width / 2 - this.measureText("...and aquired " + ((game.level > 1) ? game.level - 1 : "no") +
+                            ((game.levelX > 0) ? game.levelX * 2 : 0))) + " yards.").width / 2, 200).fillText("...and acquired " + ((game.treats >= 1) ? game.treats : "no") +
+                            " treat" + ((game.treats == 1) ? "" : "s") + ".", this.canvas.width / 2 - this.measureText("...and acquired " + ((game.level > 1) ? game.level - 1 : "no") +
                             " treats.").width / 2, 250).font("12pt 'Droid Sans' serif").fillStyle('red')
                         .fillText("Press SPACE to retry", this.canvas.width / 2 - this.measureText("Pres SPACE to retry").width / 2, 450);
                 }
             }
             if (activeScreen == 0) {
                 //Draw Title
-                //this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/mainmenu.png"], 0, 0, 640, 480);
+                //this.drawImage(assets.data[url + "assets/img/mainmenu.png"], 0, 0, 640, 480);
                 this.fillStyle('white').font("40pt 'Droid Sans' serif").textBaseline("top")
-                    .drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/logo.png"], (this.canvas.width / 2) - 245, mainMenu.titleY);
+                    .drawImage(assets.data[url + "assets/img/logo.png"], (this.canvas.width / 2) - 245, mainMenu.titleY);
                 if (mainMenu.titleY >= mainMenu.titleDestY) {
                     //Draw Buttons
                     //Start Button
@@ -629,9 +670,11 @@ cq(640, 480).framework({
                         fillText("HOW TO PLAY", (this.canvas.width / 2 - (this.measureText("HOW TO PLAY").width / 2)), 308);
                 }
             } else if (activeScreen == 2) {
-                //this.drawImage(assets.data["http://garrickb.github.io/ludumdare28/assets/img/mainmenu.png"], 0, 0, 640, 480);
+                //this.drawImage(assets.data[url + "assets/img/mainmenu.png"], 0, 0, 640, 480);
                 this.fillStyle('white').font("35pt 'Droid Sans' serif").textBaseline("top")
-                    .fillText("HOW TO PLAY", (this.canvas.width / 2) - (this.measureText("HOW TO PLAY").width / 2), 35);
+                    .fillText("HOW TO PLAY", (this.canvas.width / 2) - (this.measureText("HOW TO PLAY").width / 2), 35).font("20pt 'Droid Sans' serif").fillStyle('white')
+                    .wrappedText("Tap or hold your space bar to jump. Holding the space bar allows you to get more air time to clear the larger obstacles.", 85, 100, 480).
+                    wrappedText("W/S or UP/DOWN allow you to change your lane.", 85, 250, 480).wrappedText("If you want to pause the game, just change your tab or minimize the window.", 85, 340, 480);
                 //Back Button
                 this.fillStyle('red').lineWidth(5).strokeStyle('white').beginPath().roundRect(500,
                         400, 100, 40, 20).closePath().stroke().fill().fillStyle('white').font("22pt 'Droid Sans' serif").
@@ -645,13 +688,13 @@ cq(640, 480).framework({
             reset();
             return;
         }
-        if (game.playerIsRunning && !game.playerIsJumping && !game.playerIsMoving) {
+        if (game.playerIsRunning && !game.playerIsJumping && !game.playerIsMoving && game.levelX < game.data[0].length) {
             if ((key == "space") && activeScreen == 1) {
                 game.playerIsJumping = true;
                 game.playerJumpStartY = game.playerY;
                 input.spaceDown = true;
-                assets.data["http://garrickb.github.io/ludumdare28/assets/jump.wav"].volume = game.sfxVolume;
-                assets.data["http://garrickb.github.io/ludumdare28/assets/jump.wav"].play();
+                assets.data[url + "assets/jump.wav"].volume = game.sfxVolume;
+                assets.data[url + "assets/jump.wav"].play();
             } else if ((key == "up" || key == "w") && game.playerCurrentLane < 3) {
                 game.playerLastLane = game.playerCurrentLane++;
                 if (game.playerCurrentLane == 0)

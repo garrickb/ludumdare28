@@ -38,8 +38,8 @@
 <body>
 <h1>Ludum Dare 28: "You Only Get One"</h1>
 <link href="//fonts.googleapis.com/css?family=Droid+Sans:400,700" rel="stylesheet" type="text/css">
-<script src="http://canvasquery.com/canvasquery.js"></script>
-<script src="http://canvasquery.com/canvasquery.framework.js"></script>
+<script type="text/javascript" src="js/canvasquery.js"></script>
+<script type="text/javascript" src="js/canvasquery.framework.js"></script>
 <script type="text/javascript" src="js/game.js"></script>
 <div id="input">
     <p>SFX Volume: <input id="sfx" type="range" value="0.3" min="0.0" max="1.0" step="0.05"/></p>
@@ -49,7 +49,8 @@
 <div id="instructions" style="margin-bottom: 20px">
     <p>
 
-    <h2>Controls:</h2> <span>Space:</span> Jump<br><span>W/S or UP/DOWN:</span> Change lanes<br><span>Pause:</span>
+    <h2>Controls:</h2> <span>Space:</span> Jump (holding space makes your jumps higher)<br><span>W/S or UP/DOWN:</span>
+    Change lanes<br><span>Pause:</span>
     Change tabs or minimize the window</p>
     <h2>Plot:</h2> Your owner wanted to reward you with a massive pile of dog treats after you went on a walk with him,
     but when he emptied the box out into your bowl, only one came out! You refuse to to only eat one treat, so it's
