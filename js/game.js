@@ -12,7 +12,13 @@ window.onload = function (e) {
     };
 };
 
-//-1 = loading, 0 = main menu, 1 = game, 2 = how to play, 3 = dead, 4 = level transition
+//Handle tab changes
+window.onblur = function () {
+    game.paused = true;
+};
+document.onblur = window.onblur;
+
+//-1 = loading, 0 = main menu, 1 = game, 2 = how to play, 3 = dead
 var activeScreen = -1;
 var input = {
     spaceDown: false,
@@ -32,7 +38,7 @@ var assets = {
             [58, 56, 26]
         ],
         [
-            [42, 42, 12],
+            [50, 45, 10],
             [58, 40, 15],
             [30, 59, 5]
         ]
@@ -45,7 +51,7 @@ var assets = {
         "assets/img/house1.png", "assets/img/house0.png", "assets/img/house2.png", "assets/img/house3.png", "assets/img/house4.png",
         "assets/img/house5.png", "assets/img/house6.png", "assets/img/sidewalk0.png", "assets/img/sidewalk1.png",
         "assets/img/street0.png", "assets/img/street1.png", "assets/img/street2.png", "assets/img/clouds.png", "assets/music.mp3",
-        "assets/jump.wav", "assets/yelp.mp3"],
+        "assets/jump.wav", "assets/yelp.mp3", "assets/img/store.png"],
     assetsTotal: -1,
     assetsLoaded: 0
 };
@@ -54,8 +60,12 @@ var mainMenu = {
     titleDestY: 15
 };
 var game = {
+    paused: false,
+    completionTreatAwarded: false,
+    treats: 1,
+    totalYards: 0,
     sfxVolume: 0.3,
-    musicVolume: 0.3,
+    musicVolume: 0.2,
     deathMessage: "",
     dead: false,
     debug: false,
@@ -65,6 +75,7 @@ var game = {
     bushX: 0,
     houses: [0, 1, 0, 5],
     level: 1,
+    levelSpeed: 1,
     levelX: 0,
     timer: 30.0,
     playerDestY: 0,
@@ -82,20 +93,21 @@ var game = {
 
 //Prevent space bar from scrolling down
 document.documentElement.addEventListener('keydown', function (e) {
-    console.log(e.keyCode + " " + e);
     if (e.keyCode == 83 || e.keyCode == 87 || e.keyCode == 38 || e.keyCode == 40 || e.keyCode == 32)
         e.preventDefault();
 }, false);
 
 function loadLevel() {
+    if (game.level == undefined)
+        game.level = 1;
     var bestLevel;
     var bestCount = 0;
     var numTries = 0;
-    var goal = game.level * 35 + 25;
-    while (bestCount < goal && numTries <= 200) {
+    var goal = (game.level - 1) * 50 + 30;
+    while (bestCount < goal && numTries <= 50) {
         var levelData = new Array(4);
         for (var i = 0; i < 4; i++)
-            levelData[i] = new Array(game.level * 100);
+            levelData[i] = new Array(game.level * 50);
         var array = placeObstacles(levelData, goal);
         var count = 0;
         for (var a = 0; a < array.length; a++)
@@ -116,10 +128,9 @@ function placeObstacles(levelData, obstaclesToPlace) {
         return levelData;
     var spacingInRows = 2;
     var maxPerCol = 3;
-    var colsTillStart = 10;
     var validSpots = [];
     for (var row = 0; row < 4; row++) {
-        for (var col = colsTillStart; col < levelData[0].length; col++) {
+        for (var col = 0; col < levelData[0].length; col++) {
             var run = true;
             var colCount = 0;
             for (var cc = 0; cc < 4; cc++) { //Check column for max rows
@@ -180,8 +191,11 @@ function die() {
 }
 
 function reset() {
+    game.treats = 1;
+    game.totalYards = 0;
+    game.completionTreatAwarded = false;
     game.dead = false;
-    game.levelX = 0;
+    game.levelX = -10;
     game.level = 1;
     game.data = loadLevel();
     game.timer = 3.0;
@@ -196,6 +210,21 @@ function reset() {
     game.playerRunningFrame = 0;
     game.playerX = 50;
     game.playerY = 365;
+    activeScreen = 1;
+}
+
+function goToLevel(level) {
+    game.completionTreatAwarded = false;
+    game.dead = false;
+    game.level = level;
+    game.levelSpeed = level;
+    game.data = loadLevel();
+    game.levelX = -10 * level;
+    game.playerDestY = 0;
+    game.playerIsMoving = false;
+    game.playerIsJumping = false;
+    game.playerJumpStartY = 0;
+    game.playerTimeJumping = 0;
     activeScreen = 1;
 }
 
@@ -220,6 +249,17 @@ cq(640, 480).framework({
     },
 
     onstep: function (delta) {
+        if (game.paused) {
+
+            if (input.mouseDown != input.prevMouseDown && input.mouseDown == false) {
+                game.paused = false;
+                input.prevMouseDown = input.mouseDown;
+            } else {
+                input.prevMouseDown = input.mouseDown;
+                return;
+            }
+
+        }
         //Handle Input Events
         //Click Events
         if (input.mouseDown != input.prevMouseDown && input.mouseDown == false) {
@@ -229,22 +269,17 @@ cq(640, 480).framework({
                     if (mainMenu.titleY >= mainMenu.titleDestY) {
                         if (input.mouseDownX < this.canvas.width / 2 + 100 && input.mouseDownX > this.canvas.width / 2 - 100) {
                             if (input.mouseDownY > 200 && input.mouseDownY < 260) {
-                                //Load first level.
+                                game.levelX = -10;
+                                game.level = 1;
                                 game.data = loadLevel();
-                                console.log("start button");
-                                game.levelX = 0;
                                 activeScreen = 1;
-                            } else if (input.mouseDownY > 295 && input.mouseDownY < 350) {
-                                console.log("how to button");
+                            } else if (input.mouseDownY > 295 && input.mouseDownY < 350)
                                 activeScreen = 2;
-                            }
                         }
-                    } else {
+                    } else
                         mainMenu.titleY = mainMenu.titleDestY;
-                    }
                     break;
                 case 1: //Game
-
                     break;
                 case 2: //How To Play
                     if (input.mouseDownX < 605 && input.mouseDownX > 505) {
@@ -258,13 +293,16 @@ cq(640, 480).framework({
         }
         input.prevMouseDown = input.mouseDown;
 
-        //Handle Logic
+//Handle Logic
+
+//Draw scrolling for the main menu
         if (activeScreen == 0 || activeScreen == 2) {
-            game.cloudX += ((delta / 500) + game.level / 100) / 50;
-            game.bushX += ((delta / 500) + game.level / 100) / 1.025;
-            game.houseX += ((delta / 500) + game.level / 100) / 1.1;
-            game.levelX += (delta / 500) + game.level / 100;
+            game.cloudX += ((delta / 500) + game.levelSpeed / 100) / 50;
+            game.bushX += ((delta / 500) + game.levelSpeed / 100) / 1.025;
+            game.houseX += ((delta / 500) + game.levelSpeed / 100) / 1.1;
+            game.levelX += (delta / 500) + game.levelSpeed / 100;
         }
+
         switch (activeScreen) {
             case -1:
                 if (assets.assetsTotal == -1)
@@ -281,7 +319,6 @@ cq(640, 480).framework({
                             img.onload = function () {
                                 if (assets.data[this.src] == undefined) {
                                     assets.data[this.src] = img;
-                                    console.log("'" + this.src + "' loaded");
                                     assets.assetsLoaded++;
                                 }
                             };
@@ -301,10 +338,9 @@ cq(640, 480).framework({
                             }
                             break;
                     }
-                    if (assets.data[assets.src[assets.assetsLoaded]] == undefined) {
-                        console.log("loading '" + assets.src[assets.assetsLoaded] + "'...");
+                    if (assets.data[assets.src[assets.assetsLoaded]] == undefined)
                         return;
-                    }
+
                 }
                 break;
             case 0:
@@ -323,8 +359,8 @@ cq(640, 480).framework({
                 if (game.playerIsJumping) {
                     game.playerTimeJumping += delta / 1000;
                     if (game.playerY <= game.playerJumpStartY) {
-                        if (!input.spaceDown && game.playerTimeJumping < 0.4)
-                            game.playerTimeJumping = 0.45;
+                        if (!input.spaceDown && game.playerTimeJumping < 1.15)
+                            game.playerTimeJumping = 1.15;
                         game.playerY += Math.cos(game.playerTimeJumping * 2.75) * -3.5;
                     } else {
                         game.playerRunningFrame = 3;
@@ -353,16 +389,22 @@ cq(640, 480).framework({
 
                 }
                 if (game.playerIsRunning) {
-                    if (game.levelX < game.data[0].length + 10) {
-                        game.cloudX += ((delta / 500) + game.level / 100) / 50;
-                        game.bushX += ((delta / 500) + game.level / 100) / 1.025;
-                        game.houseX += ((delta / 500) + game.level / 100) / 1.1;
-                        game.levelX += (delta / 500) + game.level / 100;
-                        if ((game.playerRunningFrame += (delta / 125) + game.level / 100) >= 4) {
-                            game.playerRunningFrame = 0;
-                        }
-                    } else {
+                    game.cloudX += ((delta / 500) + game.levelSpeed / 100) / 50;
+                    game.bushX += ((delta / 500) + game.levelSpeed / 100) / 1.025;
+                    game.houseX += ((delta / 500) + game.levelSpeed / 100) / 1.1;
+                    game.levelX += (delta / 500) + game.levelSpeed / 100;
+                    if ((game.playerRunningFrame += (delta / 125) + game.levelSpeed / 100) >= 4) {
+                        game.playerRunningFrame = 0;
+                    }
+                    if (game.levelX >= game.data[0].length + 20) { //20 extra for the transition
+                        //TODO: Finished with level.
                         console.log("We're done with level " + game.level);
+                        game.totalYards += game.levelX * 2;
+                        goToLevel(++game.level);
+                    } else if (!game.completionTreatAwarded && game.levelX >= game.data[0].length + 10) {
+                        console.log("awarded treat")
+                        game.treats++;
+                        game.completionTreatAwarded = true;
                     }
                 }
                 break;
@@ -376,18 +418,24 @@ cq(640, 480).framework({
                         }
                         game.playerY += Math.cos(game.playerTimeJumping * 2) * -4;
                     } else {
-                        var messages = ["Ruff Luck,", "Just arf-ful,", "You got boned,", "You're barking up the wrong tree,", "Pawlease,", "Bitch pawlease,", "#rekt,", "Rover the line,"];
-                        game.deathMessage = messages[Math.round(Math.random() * messages.length)];
+                        var messages = ["Ruff Luck.", "Just arf-ful.", "You got boned.", "You're barking up the wrong tree.", "Pawlease.", "Bitch, pawlease.", "#rekt.", "Rover the line."];
+                        game.deathMessage = messages[Math.floor(Math.random() * messages.length)];
                         game.dead = true;
                     }
                 } else {
-                    //TODO: Update game
+                    //TODO: Update Screen
                 }
                 break;
         }
     },
 
     onrender: function () {
+        if (game.paused) {
+            this.clear('black').fillStyle('white').font("50pt 'Droid Sans' serif").textBaseline("top")
+                .fillText("PAUSED", (this.canvas.width / 2) - (this.measureText("PAUSED").width / 2), 190).font("20pt 'Droid Sans' serif")
+                .fillStyle('red').fillText("click to un-pause.", (this.canvas.width / 2) - (this.measureText("click to un-pause").width / 2), 260);
+            return;
+        }
         var ctx = this.canvas.getContext('2d');
         ctx.imageSmoothingEnabled = false;
         ctx.webkitImageSmoothingEnabled = false;
@@ -397,7 +445,7 @@ cq(640, 480).framework({
             this.fillStyle('white').font("25pt 'Droid Sans' serif").textBaseline("top")
                 .fillText("Loading Assets", (this.canvas.width / 2) - (this.measureText("Loading Assets").width / 2),
                     180).font("8pt 'Droid Sans' serif").fillText(assets.status, (this.canvas.width / 2) - (this.measureText(assets.status).width / 2),
-                    215);
+                    230);
         } else {
             //Draw Background
             this.clear('white').fillStyle('#00AA00').fillRect(0, 420, this.canvas.width, this.canvas.height - 420)
@@ -405,7 +453,6 @@ cq(640, 480).framework({
                 .fillStyle('#55FFFF').fillRect(0, 0, this.canvas.width, 270);
             for (var c = 0; c < 2; c++)
                 this.drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/clouds.png"], (game.cloudX % 1 * -640) + c * 640, 0, 640, 256);
-            this.font("10pt 'Droid Sans' serif").fillStyle('black').fillText("X: " + game.levelX, 0, 0);
             //Randomize New Houses
             if (game.houseX > 1 && game.houseX % 4 <= 1) {
                 for (var h = 0; h < 3; h++)
@@ -424,10 +471,10 @@ cq(640, 480).framework({
                 this.drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/bush.png"], (game.bushX % 1 * -64) + b * 64, 195, 64, 64);
 
             for (var i = 0; i <= 10; i++)
-                this.drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/concrete.png"], (game.levelX % 1 * -64) + i * 64, 375, 64, 64).
-                    drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/concrete.png"], (game.levelX % 1 * -64) + i * 64, 247, 64, 64).
-                    drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/fence.png"], (game.levelX % 1 * -64) + i * 64, 212, 64, 64).
-                    drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/street.png"], (game.levelX % 1 * -64) + i * 64, 311, 64, 64);
+                this.drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/concrete.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 375, 64, 64).
+                    drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/concrete.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 247, 64, 64).
+                    drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/fence.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 212, 64, 64).
+                    drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/street.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 311, 64, 64);
             if (activeScreen == 1 || activeScreen == 3) {
                 //Draw Obstacles
                 for (var row = 3; row >= 0; row--) {
@@ -447,6 +494,12 @@ cq(640, 480).framework({
                             } else {
                                 this.drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/street" + game.data[row][col] + ".png"], (game.levelX * -64) + (col * 64), drawY, 64, 64);
                             }
+                        }
+                    }
+                    if (game.levelX >= game.data[0].length - 10) {
+                        this.drawImage(assets.data["http://gbuck.org/ludumdare/assets/img/store.png"], (game.levelX * -64) + ((game.data[0].length + 5) * 64), 0, 640, 480);
+                        if (game.levelX >= game.data[0].length) {
+                            game.levelSpeed = -0.5;
                         }
                     }
                     //Draw dog in appropriate row
@@ -530,15 +583,15 @@ cq(640, 480).framework({
                     }
                 }
             }
-
             //Draw game here
-
             if (activeScreen == 1) {
                 if (game.timer >= 0) {
                     if (game.timer > 3) {
                         this.fillStyle('rgba(0,0,0, 0.85').fillRect(0, 0, this.canvas.width, this.canvas.height).font("20pt 'Droid Sans' serif").fillStyle('white')
-                            .wrappedText("Your are a dog living happily with your owner. One day after a nice walk your owner decides that you deserve a treat, so he reaches into the treat box, but there's only one left! You are now on a quest to retrieve more dog treats, since one is clearly not sufficient. Run to the pet store and fetch more treats!", 100, 100, 480)
-                            .font("12pt 'Droid Sans' serif").fillStyle('red').fillText("Press space to skip.", this.canvas.width / 2 - this.measureText("Press space to skip.").width / 2, 365);
+                            .wrappedText("Your owner wanted to reward you with a massive pile of dog treats after you went on a walk with him," +
+                                " but when he emptied the box out into your bowl, only one came out! You refuse to to only eat one treat, so it's time to get the treats you deserve!" +
+                                " Run to as many pet stores as you can and take the free treats! But remember, only one treat per dog!", 100, 100, 480)
+                            .font("12pt 'Droid Sans' serif").fillStyle('red').fillText("Press space to skip.", this.canvas.width / 2 - this.measureText("Press space to skip.").width / 2, 450);
                     }
                     this.fillStyle('white').lineWidth(5).strokeStyle('black').beginPath().roundRect((this.canvas.width / 2) - 50,
                             25, 100, 50, 20).closePath().stroke().fill().fillStyle('black').font("24pt 'Droid Sans' serif").
@@ -552,9 +605,13 @@ cq(640, 480).framework({
                 //TODO: stuff
                 if (game.dead) {
                     this.fillStyle('rgba(0,0,0, 0.85').fillRect(0, 0, this.canvas.width, this.canvas.height).
-                        font("35pt 'Droid Sans' serif").fillStyle('white').wrappedText(game.deathMessage + "", 50, 25, 500).font("25pt 'Droid Sans' serif").fillText("You made it " + Math.floor(game.levelX * 2) +
-                            " yards.", this.canvas.width / 2 - this.measureText("You made it " + Math.floor(game.levelX * 2) + " yard(s).").width / 2, 200).font("12pt 'Droid Sans' serif")
-                        .fillText("Press SPACE to retry!", this.canvas.width / 2 - this.measureText("Pres SPACE to retry!").width / 2, 350);
+                        font("35pt 'Droid Sans' serif").fillStyle('white').wrappedText(game.deathMessage + "", 100, 50, 450).
+                        font("25pt 'Droid Sans' serif").fillText("You made it " + (Math.floor(game.totalYards + ((game.levelX > 0) ? game.levelX * 2 : 0))) +
+                            " yards.", this.canvas.width / 2 - this.measureText("You made it " + (Math.floor(game.totalYards +
+                            ((game.levelX > 0) ? game.levelX * 2 : 0))) + " yards.").width / 2, 200).fillText("...and aquired " + ((game.treats >= 1) ? game.treats : "no") +
+                            " treat" + ((game.treats == 1) ? "" : "s") + ".", this.canvas.width / 2 - this.measureText("...and aquired " + ((game.level > 1) ? game.level - 1 : "no") +
+                            " treats.").width / 2, 250).font("12pt 'Droid Sans' serif").fillStyle('red')
+                        .fillText("Press SPACE to retry", this.canvas.width / 2 - this.measureText("Pres SPACE to retry").width / 2, 450);
                 }
             }
             if (activeScreen == 0) {
@@ -635,4 +692,5 @@ cq(640, 480).framework({
         }
     }
 
-}).appendTo("body");
+}).
+    appendTo("body");

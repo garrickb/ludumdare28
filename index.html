@@ -25,6 +25,10 @@
             color: white;
         }
 
+        span {
+            color: green;
+        }
+
         body {
             margin: 0;
             background-color: #555;
@@ -40,15 +44,17 @@
 <div id="input">
     <p>SFX Volume: <input id="sfx" type="range" value="0.3" min="0.0" max="1.0" step="0.05"/></p>
 
-    <p>Music Volume: <input id="music" type="range" value="0.3" min="0.0" max="1.0" step="0.05"/></p>
+    <p>Music Volume: <input id="music" type="range" value="0.2" min="0.0" max="1.0" step="0.05"/></p>
 </div>
 <div id="instructions" style="margin-bottom: 20px">
     <p>
 
-    <h2>Controls:</h2> Space: Jump<br> W/S or UP/DOWN: Change lanes</p>
-    <h2>Plot:</h2> Your owner wanted to reward you with a pile of dog treats after you go on a walk with him,
-    but when he empties the box out into your bowl, only one comes out! It's time to get the treats you deserve!
-    Run to the pet store and fetch more dog treats!</p>
+    <h2>Controls:</h2> <span>Space:</span> Jump<br><span>W/S or UP/DOWN:</span> Change lanes<br><span>Pause:</span>
+    Change tabs or minimize the window</p>
+    <h2>Plot:</h2> Your owner wanted to reward you with a massive pile of dog treats after you went on a walk with him,
+    but when he emptied the box out into your bowl, only one came out! You refuse to to only eat one treat, so it's
+    time to get the treats you deserve! Run to as many pet stores as you can and take the free treats! But remember,
+    only one treat per dog!</p>
     <h2>Source:</h2> Github: <a
         href="https://github.com/garrickb/ludumdare28">https://github.com/garrickb/ludumdare28</a>
 </div>
