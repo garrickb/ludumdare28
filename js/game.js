@@ -508,7 +508,7 @@ cq(640, 480).framework({
                     drawImage(assets.data[url + "assets/img/concrete.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 247, 64, 64).
                     drawImage(assets.data[url + "assets/img/fence.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 212, 64, 64).
                     drawImage(assets.data[url + "assets/img/street.png"], ((game.levelX > 0) ? (game.levelX % 1 * -64) : (game.levelX % -1 * -64) - 64) + i * 64, 311, 64, 64);
-            if (game.data != undefined && game.levelX >= game.data[0].length - 10) {
+            if (game.data != undefined && game.levelX >= game.data[0].length - 8) {
                 this.drawImage(assets.data[url + "assets/img/store-background.png"], (game.levelX * -64) + ((game.data[0].length) * 64) + 2, -1, 1280, 480)
                 if (game.levelX >= game.data[0].length && !game.atEnd) {
                     var names = ["A Walk in the Bark", "Dog Gone It", "Live Long and Slobber", "On the Growl", "Raise the Woof",
@@ -563,11 +563,12 @@ cq(640, 480).framework({
                         this.drawImage(assets.data[url + "assets/img/treat.png"], (game.levelX * -64) + ((game.data[0].length) * 64) + 640 + 54, 340 + game.treatY, 72, 42);
                     this.drawImage(assets.data[url + "assets/img/store-foreground.png"], (game.levelX * -64) + ((game.data[0].length) * 64) + 2, -1, 1280, 480)
                     if (game.storeLogo != undefined && game.storeName != "")
-                        this.font("20pt 'Droid Sans' serif").fillStyle('white').drawImage(assets.data[game.storeLogo], (game.levelX * -64) + ((game.data[0].length) * 64) + 575, 60, 100, 100).wrappedText(game.storeName, (game.levelX * -64) + ((game.data[0].length) * 64) + 680, 80, 150);
+                        this.font("20pt 'Droid Sans' serif").fillStyle('white').drawImage(assets.data[game.storeLogo], (game.levelX * -64) + ((game.data[0].length) * 64) + 575, 60, 100, 100).wrappedText(game.storeName, (game.levelX * -64) + ((game.data[0].length) * 64) + 680, 73, 150);
                     if (game.playerIsRunning) {
                         var player = {
                             left: game.playerX + 10,
                             right: game.playerX + 64 - 10,
+
                             top: game.playerY + 20 - ((game.playerIsJumping) ? 10 : 0),
                             bottom: game.playerY + 64 - 20 - ((game.playerIsJumping) ? 10 : 0)
                         }
