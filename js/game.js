@@ -199,13 +199,13 @@ function die() {
 }
 
 function reset() {
+    game.level = 1;
     game.atEnd = false;
     game.treats = 1;
     game.totalYards = 0;
     game.completionTreatAwarded = false;
     game.dead = false;
     game.levelX = -10;
-    game.level = 1;
     game.data = loadLevel();
     game.timer = 3.0;
     game.playerDestY = 0;
@@ -229,7 +229,7 @@ function goToLevel(level) {
     game.level = level;
     game.levelSpeed = level;
     game.data = loadLevel();
-    game.levelX = -10 + (-3 * level);
+    game.levelX = -10 + (-3 * game.level);
     if (game.playerCurrentLane != game.playerLastLane) {
         game.playerIsMoving = true;
         if (game.playerLastLane == 0)
