@@ -53,7 +53,8 @@ var assets = {
         "assets/img/house5.png", "assets/img/house6.png", "assets/img/sidewalk0.png", "assets/img/sidewalk1.png",
         "assets/img/street0.png", "assets/img/street1.png", "assets/img/street2.png", "assets/img/clouds.png", "assets/music.mp3",
         "assets/jump.wav", "assets/yelp.mp3", "assets/img/store-background.png", "assets/img/store-foreground.png",
-        "assets/img/treat.png", "assets/woof.mp3"],
+        "assets/img/treat.png", "assets/woof.mp3", "assets/img/sign0.png", "assets/img/sign1.png", "assets/img/sign2.png",
+        "assets/img/sign3.png", "assets/img/sign4.png"],
     assetsTotal: -1,
     assetsLoaded: 0
 };
@@ -62,6 +63,8 @@ var mainMenu = {
     titleDestY: 15
 };
 var game = {
+    storeName: "",
+    storeLogo: "",
     treatYValue: 0,
     treatY: 0,
     atEnd: false,
@@ -226,7 +229,7 @@ function goToLevel(level) {
     game.level = level;
     game.levelSpeed = level;
     game.data = loadLevel();
-    game.levelX = -10 * level;
+    game.levelX = -10 + (-3 * level);
     if (game.playerCurrentLane != game.playerLastLane) {
         game.playerIsMoving = true;
         if (game.playerLastLane == 0)
@@ -508,6 +511,10 @@ cq(640, 480).framework({
             if (game.data != undefined && game.levelX >= game.data[0].length - 10) {
                 this.drawImage(assets.data[url + "assets/img/store-background.png"], (game.levelX * -64) + ((game.data[0].length) * 64) + 2, -1, 1280, 480)
                 if (game.levelX >= game.data[0].length && !game.atEnd) {
+                    var names = ["A Walk in the Bark", "Dog Gone It", "Live Long and Slobber", "On the Growl", "Raise the Woof",
+                        "Fur Get Me Not", "The Big Bad Woof", "Stay Pawsitive", "For Pet's Sake", "Wags to Riches"]
+                    game.storeName = names[Math.floor(Math.random() * names.length)];
+                    game.storeLogo = (url + "assets/img/sign" + Math.floor(Math.random() * 5) + ".png");
                     game.levelSpeed = -0.5;
                     game.playerLastLane = game.playerCurrentLane;
                     game.playerCurrentLane = 1;
@@ -517,6 +524,8 @@ cq(640, 480).framework({
                 }
             }
             if (activeScreen == 1 || activeScreen == 3) {
+                if (game.playerIsJumping)
+                    this.drawImage(assets.data[url + "assets/img/shadow.png"], game.playerX, game.playerJumpStartY, 64, 64);
                 //Draw Obstacles
                 for (var row = 3; row >= 0; row--) {
                     var drawY;
@@ -548,12 +557,13 @@ cq(640, 480).framework({
                             this.drawImage(assets.data[url + "assets/img/boxer-running" + Math.floor(game.playerRunningFrame) + ".png"], game.playerX, game.playerY, 64, 64);
                         } else {
                             this.drawImage(assets.data[url + "assets/img/boxer-jumping.png"], game.playerX, game.playerY, 64, 64);
-                            this.drawImage(assets.data[url + "assets/img/shadow.png"], game.playerX, game.playerJumpStartY, 64, 64);
                         }
                     }
                     if (!game.completionTreatAwarded)
                         this.drawImage(assets.data[url + "assets/img/treat.png"], (game.levelX * -64) + ((game.data[0].length) * 64) + 640 + 54, 340 + game.treatY, 72, 42);
-                    this.drawImage(assets.data[url + "assets/img/store-foreground.png"], (game.levelX * -64) + ((game.data[0].length) * 64) + 2, -1, 1280, 480);
+                    this.drawImage(assets.data[url + "assets/img/store-foreground.png"], (game.levelX * -64) + ((game.data[0].length) * 64) + 2, -1, 1280, 480)
+                    if (game.storeLogo != undefined && game.storeName != "")
+                        this.font("20pt 'Droid Sans' serif").fillStyle('white').drawImage(assets.data[game.storeLogo], (game.levelX * -64) + ((game.data[0].length) * 64) + 575, 60, 100, 100).wrappedText(game.storeName, (game.levelX * -64) + ((game.data[0].length) * 64) + 680, 80, 150);
                     if (game.playerIsRunning) {
                         var player = {
                             left: game.playerX + 10,
